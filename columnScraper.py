@@ -1,3 +1,4 @@
+## Program for scraping all possible  equipment types
 
 
 from bs4 import BeautifulSoup
@@ -5,12 +6,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
 import time
 import csv
 
 driver = webdriver.Chrome()
-driver.get("https://www.auto24.ee/kasutatud/nimekiri.php?bn=2&a=100&aj=&ssid=251105643&j%5B%5D=1&j%5B%5D=2&j%5B%5D=3&j%5B%5D=4&j%5B%5D=5&j%5B%5D=6&j%5B%5D=61&j%5B%5D=7&j%5B%5D=8&j%5B%5D=69&j%5B%5D=70&ae=8&af=100&otsi=otsi")
+driver.get("https://www.auto24.ee/users/kuuluta.php?vehicle_type=101")
 
 all_links = []
 

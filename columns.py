@@ -1,18 +1,4 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import pandas as pd
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from time import sleep
-
-
-
-## ----------------------------------------------------------------- ADD-ON COLUMNS ----------------------------------------------------------------------------- 
-
-
-
-binaryAddons = ["abs pidurid", "elektrooniline seisupidur", "turvakardinad", "kõrvalistuja turvapadja väljalülitamise võimalus", 
+binary = {"abs pidurid", "elektrooniline seisupidur", "turvakardinad", "kõrvalistuja turvapadja väljalülitamise võimalus", 
           "juhi väsimuse tuvastamise süsteem", "sõiduraja vahetamise abisüsteem", "liiklusmärkide tuvastus ja kuvamine", "öise nägemise assistent",
           "pimenurga hoiatus", "jalakäija ohutusfunktsiooniga kapott", "lisapidurituli", "vihmasensor", "integreeritud lapseiste",
           "turvavööde eelpingutid esiistmetel", "automaatne paigalseismise funktsioon / mägistardi abi",
@@ -62,141 +48,31 @@ binaryAddons = ["abs pidurid", "elektrooniline seisupidur", "turvakardinad", "k�
           'reguleeritav vedrustus (elektriliselt, jäikus, kõrgus)', 'reguleeritav vedrustus (jäikus)', 
           'reguleeritav vedrustus (jäikus, kõrgus)', 'reguleeritav vedrustus (kõrgus)', "pagasikate", "pagasikate (automaatne)",
           "veokonks", "veokonks (elektriline, teisaldatav)", "veokonks (teisaldatav)", "veokonks (elektriline)"
-          ]
+          }
 
-binaryWithAdditionalInfo = ["immobilisaator", "stabiilsuskontroll", "pidurdusjõukontroll", "veojõukontroll", "sõiduraja hoidmise abisüsteem", 
-          "kokkupõrget ennetav pidurisüsteem", "automaatpidurdussüsteem", "mägipidur", "lisatuled", "suverehvid", "ilukilbid", "tagavararatas", 
-          "helivõimendi", "kõlarid", "subwoofer", "cd box", "autotelefon", "käed vabad süsteem", "nahkpolster", "poolnahkpolster", 
-          "veluurpolster", "tekstiilpolster", "mootori eelsoojendus", "salongi eelsoojendus", "katusereelingud", "topeltklaasid"
-          ]
+binaryAdditional = {"immobilisaator",
+          "stabiilsuskontroll", "pidurdusjõukontroll", "veojõukontroll", 
+          "sõiduraja hoidmise abisüsteem", "kokkupõrget ennetav pidurisüsteem",
+          "automaatpidurdussüsteem", "mägipidur", "lisatuled", "suverehvid", "ilukilbid", "tagavararatas", 
+          "helivõimendi", "kõlarid", "subwoofer", "cd box", "autotelefon", "käed vabad süsteem",
+          "nahkpolster", "poolnahkpolster", "veluurpolster", "tekstiilpolster", "mootori eelsoojendus", 
+          "salongi eelsoojendus", "katusereelingud", "topeltklaasid"}
 
-numeralAddons = ["turvapadi", "elektriliselt reguleeritavad istmed", "õhuga reguleeritav iste", "istmesoojendused", "elektrilised akende tõstukid",
-           "peeglid päikesesirmides", "rulookardinad ustel", "12v pistikupesad"]
+numeral = {"turvapadi", "elektriliselt reguleeritavad istmed", "õhuga reguleeritav iste", "istmesoojendused", "elektrilised akende tõstukid",
+           "peeglid päikesesirmides", "rulookardinad ustel", "12v pistikupesad"}
 
-allAddons = binaryAddons + binaryWithAdditionalInfo + numeralAddons
+print(f"{len(binary)} + {len(binaryAdditional)} + {len(numeral)} = {len(binary) + len(binaryAdditional) + len(numeral)}")
+all = binary | binaryAdditional | numeral
 
-## ------------------------------------------------------------------------------------------------------------------------------------------------
+print(len(all))
+# algSõna = "reguleeritav vedrustus ("
+# lisad = ["elektriliselt", "jäikus", "kõrgus"]
+# tulem = []
+# for i in range(len(lisad)):
+#     for j in range(i, len(lisad)):
+        
+#         suffix = ", ".join(lisad[i:j+1])
+#         tulem.append(algSõna + suffix + ")")
 
-links = pd.read_csv("auto24_links.csv", header=None)[0].head(300).tolist()
-
-driver = webdriver.Chrome()
-columns = ["Link", "Mark", "Mudel", "Täisnimi"] + allAddons
-batch = []
-batch_size = 100
-first_write = True
-
-for i, link in enumerate(links):
-    try:
-        try:
-            driver.get(link)
-        except:
-            print(f"VIGA LINGI NR {i} ({link}) LAADIMISEGA")
-            sleep(30)
-        try:
-            driver.get(link)
-            # Wait untill last section has loaded
-            WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.section.vTechData"))
-            )
-        except:
-            pass
-        data = {}
-        data["Link"] = link
-
-        # --- MARK JA MUDEL ---
-        crumbs = driver.find_elements(By.CSS_SELECTOR, "div.b-breadcrumbs a")
-        data["Mark"] = crumbs[1].text.strip() if len(crumbs) > 1 else ""
-        data["Mudel"] = crumbs[-2].text.strip() if len(crumbs) > 1 else ""
-
-        # --- TÄISNIMI ---
-        try:
-            data["Täisnimi"] = driver.find_element(By.CSS_SELECTOR, "h1.commonSubtitle").text.split('\n')[0]
-        except:
-            data["Täisnimi"] = ""
-
-        # --- PÕHIANDMED (tabel) ---
-        main_data = driver.find_elements(By.CSS_SELECTOR, "table.main-data tr")
-
-        for row in main_data:
-            try:
-                label = row.find_element(By.CSS_SELECTOR, "td.label").text.strip().replace(":", "")
-                value = row.find_element(By.CSS_SELECTOR, "td.field").text.strip()
-                if label.lower() == "soodushind":
-                    data["Hind"] = value
-                elif label.lower() not in ["reg. number", "vin-kood"]: # Dont need these
-                    data[label] = value
-                    if label not in columns:
-                        columns.append(label)
-                    
-            except:
-                continue
-        data["Hind"] = data["Hind"].split("\n")[0]
-
-        # --- ADDONS ---
-        extras = driver.find_elements(By.CSS_SELECTOR, "div.section.vEquipment li.item")
-        for e in extras:
-            addonHTML = e.text.strip().lower()
-
-            if addonHTML in binaryAddons:
-                data[addonHTML] = 1
-                continue
-            
-            found = False
-            for addon in binaryWithAdditionalInfo:
-                if addon in addonHTML:       
-                    data[addon] = 1
-                    found = True
-                    break
-
-            if found:
-                continue
-
-            for addon in numeralAddons:
-                if addon in addonHTML:
-                    nr = addonHTML.split()[0]
-                    data[addon] = nr
-                    break
-                
-
-        # --- TECHNICAL DATA ---
-
-        labels = driver.find_elements(By.CSS_SELECTOR, "div.section.vTechData td.label")
-        values = driver.find_elements(By.CSS_SELECTOR, "div.section.vTechData td.value")
-
-        for i in range(min(len(labels), len(values))):
-            label = labels[i].text.strip().replace(":", "")
-            value = values[i].text.strip()
-            if label and value:
-                data[label] = value
-                if label not in columns:
-                    columns.append(label)
-
-        batch.append(data)
-
-        if len(batch) >= batch_size:
-            df = pd.DataFrame(batch)
-            for col in columns:
-                if col not in df.columns:
-                    df[col] = 0
-            df = df[columns]
-
-            df.to_csv(
-                "auto24_data.csv",
-                index=False,
-                mode="w" if first_write else "a",
-                header=first_write
-            )
-            first_write = False
-            batch = []
-
-    except Exception as e:
-        print("VIGA linkiga:", link)
-        print("Error:", e)
-        continue
-
-driver.quit()
-
-if batch:
-    df = pd.DataFrame(batch)
-    df.to_csv("auto24_data.csv", index=False, mode="a", header=False)
-
+# print(tulem)
+    

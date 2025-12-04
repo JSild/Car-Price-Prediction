@@ -4,7 +4,8 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from time import sleep
+import time
+
 
 
 
@@ -77,13 +78,15 @@ allAddons = binaryAddons + binaryWithAdditionalInfo + numeralAddons
 
 ## ------------------------------------------------------------------------------------------------------------------------------------------------
 
-links = pd.read_csv("auto24_links.csv", header=None)[0].head(300).tolist()
+links = pd.read_csv("auto24_links.csv", header=None)[0].tolist()[8117:]
 
 driver = webdriver.Chrome()
 columns = ["Link", "Mark", "Mudel", "Täisnimi"] + allAddons
 batch = []
-batch_size = 100
+start = time.perf_counter()
+batch_size = 3000
 first_write = True
+batch_nr = 1
 
 for i, link in enumerate(links):
     try:
@@ -91,7 +94,7 @@ for i, link in enumerate(links):
             driver.get(link)
         except:
             print(f"VIGA LINGI NR {i} ({link}) LAADIMISEGA")
-            sleep(30)
+            time.sleep(30)
         try:
             driver.get(link)
             # Wait untill last section has loaded
@@ -181,13 +184,17 @@ for i, link in enumerate(links):
             df = df[columns]
 
             df.to_csv(
-                "auto24_data.csv",
+                "auto24_data8000.csv",
                 index=False,
                 mode="w" if first_write else "a",
                 header=first_write
             )
             first_write = False
             batch = []
+            end = time.perf_counter()
+            print("Tehtud ", batch_nr, "Kulunud aeg:", end - start, "sekundit")
+            batch_nr += 1
+            start = time.perf_counter()
 
     except Exception as e:
         print("VIGA linkiga:", link)
@@ -198,5 +205,5 @@ driver.quit()
 
 if batch:
     df = pd.DataFrame(batch)
-    df.to_csv("auto24_data.csv", index=False, mode="a", header=False)
+    df.to_csv("auto24_data2.csv", index=False, mode="w", header=False)
 

@@ -11,9 +11,9 @@ df = pd.read_csv("auto24_cleaned.csv")
 print("Dataset shape:", df.shape)
 print("\nMissing values per column:\n", df.isna().sum())
 
-# ------------------------
+
 # SUMMARY STATISTICS
-# ------------------------
+
 print("\nPrice statistics:\n", df["price"].describe())
 print("\nMileage statistics:\n", df["mileage_km"].describe())
 print("\nYear statistics:\n", df["reg_year"].describe())

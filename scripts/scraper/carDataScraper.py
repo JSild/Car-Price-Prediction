@@ -78,7 +78,7 @@ allAddons = binaryAddons + binaryWithAdditionalInfo + numeralAddons
 
 ## ------------------------------------------------------------------------------------------------------------------------------------------------
 
-links = pd.read_csv("auto24_links.csv", header=None)[0].tolist()[8117:]
+links = pd.read_csv("../../data/raw/auto24_links.csv", header=None)[0].tolist()[8117:]
 
 driver = webdriver.Chrome()
 columns = ["Link", "Mark", "Mudel", "Täisnimi"] + allAddons

@@ -38,7 +38,7 @@ print(f"Found {len(all_links)} links in total")
 driver.quit()
 
 
-with open("auto24_links.csv", "w", newline="") as f:
+with open("../../data/raw/auto24_links.csv", "w", newline="") as f:
     writer = csv.writer(f)
     for link in all_links:
         writer.writerow([link])

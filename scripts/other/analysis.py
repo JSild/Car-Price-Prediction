@@ -6,7 +6,7 @@ import seaborn as sns
 
 # LOAD CLEANED DATA
 
-df = pd.read_csv("auto24_cleaned.csv")
+df = pd.read_csv("../../data/processed/auto24_cleaned.csv")
 
 print("Dataset shape:", df.shape)
 print("\nMissing values per column:\n", df.isna().sum())
